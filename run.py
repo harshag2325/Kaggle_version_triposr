@@ -63,7 +63,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--mc-resolution",
-    default=1024,    ##to check progresses
+    default=768,    ##to check progresses
     type=int,
     help="Marching cubes grid resolution. Default: 512"
 )
