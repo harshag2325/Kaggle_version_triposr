@@ -13,14 +13,14 @@ from ...utils import BaseModule
 class DINOSingleImageTokenizer(BaseModule):
     @dataclass
     class Config(BaseModule.Config):
-        pretrained_model_name_or_path: str = r'C:\Users\harsh\OneDrive\Desktop\1_rerun\model_weights_config_files\pytorch_model.bin'
+        pretrained_model_name_or_path: str = r'/kaggle/input/models-weight-config-files/other/default/1/pytorch_model.bin'
         enable_gradient_checkpointing: bool = False
 
     cfg: Config
 
     def configure(self) -> None:
         # Use Path for better path handling
-        model_dir = Path(r"C:\Users\harsh\OneDrive\Desktop\1_rerun\model_weights_config_files")
+        model_dir = Path(r"/kaggle/input/models-weight-config-files/other/default/1")
         
         # Load config and initialize model
         config = ViTConfig.from_json_file(str(model_dir / "v16config.json"))
