@@ -113,7 +113,7 @@ model = TSR.from_pretrained(
 if torch.cuda.device_count() > 1:
     print("Using", torch.cuda.device_count(), "GPUs")
     model = nn.DataParallel(model)
-model.renderer.set_chunk_size(args.chunk_size)
+# model.renderer.set_chunk_size(args.chunk_size)
 model.to(device)
 timer.end("Initializing model")
 
