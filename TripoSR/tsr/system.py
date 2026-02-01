@@ -56,8 +56,8 @@ class TSR(BaseModule):
             config_path = os.path.join(pretrained_model_name_or_path, config_name)
             weight_path = os.path.join(pretrained_model_name_or_path, weight_name)
         else:
-            config_path = r'C:\Users\harsh\OneDrive\Desktop\1_rerun\model_weights_config_files\config.yaml'
-            weight_path = r'C:\Users\harsh\OneDrive\Desktop\1_rerun\model_weights_config_files\model.ckpt'
+            config_path = r'/kaggle/input/models-weight-config-files/other/default/1/config.yaml'
+            weight_path = r'/kaggle/input/models-weight-config-files/other/default/1/model.ckpt'
 
         cfg = OmegaConf.load(config_path)
         OmegaConf.resolve(cfg)
