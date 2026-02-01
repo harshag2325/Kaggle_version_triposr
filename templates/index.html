@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Image Blending + 3D Viewer</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
+
+    <script src="/static/js/three.min.js"></script>
+    <script src="/static/js/OBJLoader.js"></script>
+    <script src="/static/js/OrbitControls.js"></script>
+
+    <style>
+      :root {
+        --bg-color: #121212;
+        --card-bg: #1e1e1e;
+        --text-color: #e0e0e0;
+        --accent-color: #3b82f6;
+        --accent-hover: #2563eb;
+        --input-bg: #2d2d2d;
+        --border-color: #444;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      h1 {
+        font-weight: 300;
+        letter-spacing: 1px;
+        margin-bottom: 30px;
+        text-align: center;
+        color: #fff;
+      }
+
+      h2 {
+        font-size: 1.2rem;
+        margin-top: 0;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        color: var(--accent-color);
+      }
+
+      h3 { font-size: 1.1rem; }
+
+      /* Main Container */
+      .container {
+        width: 100%;
+        max-width: 940px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      /* Cards/Panels */
+      .panel {
+        background-color: var(--card-bg);
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Inputs & Labels */
+      label {
+        display: inline-block;
+        margin-bottom: 5px;
+        font-weight: 500;
+      }
+
+      input[type="text"], select {
+        background-color: var(--input-bg);
+        border: 1px solid var(--border-color);
+        color: white;
+        padding: 10px;
+        border-radius: 6px;
+        outline: none;
+        transition: border 0.2s;
+      }
+
+      input[type="text"]:focus, select:focus {
+        border-color: var(--accent-color);
+      }
+
+      input[type="file"] {
+        background: var(--input-bg);
+        padding: 8px;
+        border-radius: 6px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      /* Buttons */
+      .btn {
+        background-color: var(--accent-color);
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        margin-right: 8px;
+        margin-bottom: 8px;
+      }
+
+      .btn:hover {
+        background-color: var(--accent-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      /* Controls Group */
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-color);
+      }
+
+      .controls .btn {
+        margin: 0; /* Let flex gap handle spacing */
+        flex: 1 0 auto; /* Grow to fill space */
+      }
+
+      /* Prompt Block Specifics */
+      #fg-options {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+      }
+
+      .small {
+        font-size: 0.85rem;
+        color: #888;
+        margin-top: 5px;
+        display: block;
+      }
+
+      /* Canvas Wrapper */
+      #canvas-wrapper {
+        position: relative;
+        display: inline-block;
+        border: 2px solid var(--border-color);
+        border-radius: 4px;
+        overflow: hidden;
+        background: url('data:image/svg+xml;utf8,<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="10" height="10" fill="%23222"/><rect x="10" y="0" width="10" height="10" fill="%23333"/><rect x="0" y="10" width="10" height="10" fill="%23333"/><rect x="10" y="10" width="10" height="10" fill="%23222"/></svg>'); /* Checkerboard pattern for transparent areas */
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      }
+      
+      canvas {
+        display: block;
+      }
+
+      #threeCanvasInFabric { 
+        box-sizing: border-box; 
+      }
+      
+      #final-img {
+        border-radius: 8px;
+        border: 2px solid var(--accent-color);
+        margin-top: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      }
+
+      /* Utility */
+      .mt-4 { margin-top: 1rem; }
+    </style>
+  </head>
+
+  <body>
+    
+    <div class="container">
+      <h1>Image Blending + 3D Viewer</h1>
+
+      <div class="panel">
+        <h2>Setup & Configuration</h2>
+        <div>
+          <label style="margin-bottom: 8px; display:block;">1. Background Image</label>
+          <input type="file" id="img1" />
+          
+          <div style="margin: 20px 0; height: 1px; background: #333;"></div>
+
+          <label style="margin-bottom: 8px; display:block;">2. Foreground Source</label>
+          
+          <div id="fg-options">
+            <div style="margin-bottom: 15px;">
+              <input type="radio" name="fg_source" id="fg_file_radio" value="file" checked>
+              <label for="fg_file_radio" style="margin-right: 15px; cursor: pointer;">Upload File</label>
+              
+              <input type="radio" name="fg_source" id="fg_prompt_radio" value="prompt">
+              <label for="fg_prompt_radio" style="cursor: pointer;">Generate via AI</label>
+            </div>
+
+            <div id="fg_file_block">
+              <input type="file" id="img2" />
+            </div>
+
+            <div id="fg_prompt_block" style="display:none;">
+              <div style="display:flex; gap: 10px; flex-wrap: wrap;">
+                <input type="text" id="fgPrompt" placeholder="e.g., modern wooden office chair" style="flex: 2; min-width: 200px;">
+                <select id="fgShadowChoice" title="Shadow option" style="flex: 1;">
+                  <option value="0">No shadow (clean)</option>
+                  <option value="1">Keep natural shadow</option>
+                </select>
+                <button class="btn" onclick="generateForegroundFromPrompt()" style="margin:0;">Generate</button>
+              </div>
+              <div class="small">Tip: use descriptive prompts, e.g. "mid-century wooden chair, brown leather cushion, studio lighting"</div>
+            </div>
+          </div>
+
+          <button class="btn" style="width: 100%; margin-top: 10px;" onclick="uploadImages()">Upload Sources to Canvas</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Workspace</h2>
+        
+        <div style="text-align: center;">
+          <div id="canvas-wrapper">
+            <canvas id="c" width="900" height="550"></canvas>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button class="btn" onclick="generate3DAndUse()">Generate 3D</button>
+          <button class="btn" onclick="place3DModelInCanvas()">Place 3D in Canvas</button>
+          <button class="btn" style="background-color: #444;" onclick="resetCanvas()">Reset</button>
+          <button class="btn" style="background-color: #10b981;" onclick="captureThenBlend()">Blend Layers</button>
+          <button class="btn" style="background-color: #8b5cf6;" onclick="downloadFinal()">Download</button>
+        </div>
+
+        <h3 class="mt-4">Final Result</h3>
+        <img id="final-img" style="display: none; max-width:100%;" />
+      </div>
+    </div>
+
+    <script src="/static/js/editor.js"></script>
+
+    <script>
+      // small UI toggle logic to show/hide prompt block
+      document.getElementById('fg_file_radio').addEventListener('change', function() {
+        document.getElementById('fg_file_block').style.display = 'block';
+        document.getElementById('fg_prompt_block').style.display = 'none';
+      });
+      document.getElementById('fg_prompt_radio').addEventListener('change', function() {
+        document.getElementById('fg_file_block').style.display = 'none';
+        document.getElementById('fg_prompt_block').style.display = 'block';
+      });
+    </script>
+  </body>
+</html>
