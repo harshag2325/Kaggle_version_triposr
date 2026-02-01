@@ -8,6 +8,7 @@ import rembg
 import torch
 import xatlas
 from PIL import Image
+import torch.nn as nn
 
 from TripoSR.tsr.system import TSR
 from TripoSR.tsr.utils import remove_background, resize_foreground
@@ -109,6 +110,9 @@ model = TSR.from_pretrained(
     config_name="config.yaml",
     weight_name="model.ckpt",
 )
+if torch.cuda.device_count() > 1:
+    print("Using", torch.cuda.device_count(), "GPUs")
+    model = nn.DataParallel(model)
 model.renderer.set_chunk_size(args.chunk_size)
 model.to(device)
 timer.end("Initializing model")
