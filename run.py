@@ -57,13 +57,13 @@ parser.add_argument(
 )
 parser.add_argument(
     "--chunk-size",
-    default=8192,
+    default=2048,
     type=int,
     help="Evaluation chunk size for surface extraction and rendering. Smaller chunk size reduces VRAM usage but increases computation time. 0 for no chunking. Default: 8192",
 )
 parser.add_argument(
     "--mc-resolution",
-    default=512,    ##to check progresses
+    default=1024,    ##to check progresses
     type=int,
     help="Marching cubes grid resolution. Default: 512"
 )
