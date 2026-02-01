@@ -64,7 +64,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--mc-resolution",
-    default=1024,    ##to check progresses
+    default=768,    ##to check progresses
     type=int,
     help="Marching cubes grid resolution. Default: 512"
 )
@@ -110,9 +110,9 @@ model = TSR.from_pretrained(
     config_name="config.yaml",
     weight_name="model.ckpt",
 )
-if torch.cuda.device_count() > 1:
-    print("Using", torch.cuda.device_count(), "GPUs")
-    model = nn.DataParallel(model)
+# if torch.cuda.device_count() > 1:
+#     print("Using", torch.cuda.device_count(), "GPUs")
+#     model = nn.DataParallel(model)
 # model.renderer.set_chunk_size(args.chunk_size)
 model.to(device)
 timer.end("Initializing model")
